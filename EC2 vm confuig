@@ -1,0 +1,41 @@
+# Docker setup
+chmod 400 'c:/Users/USER/OneDrive/Documents/2026ec1.pem'
+ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@100.48.197.127
+sudo apt update
+sudo apt upgrade -y
+sudo apt install docker.io -y
+sudo apt update
+sudo usermod -aG docker $USER && newgrp docker && docker ps
+ 
+# Java and Jenkins setup
+
+sudo apt update
+sudo apt install -y openjdk-21-jre
+java -version
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt update
+sudo apt install jenkins -y
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+ss -tuln | grep -i listen
+cat /var/lib/jenkins/secrets/initialAdminPassword
+docker run -d -p 8080:8080 --name jenkinns jenkins/jenkins:lts
+docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword 
+
+curl -I http://learning:learning@http://100.48.197.127:8080/job/demo/build?token=ABUSULE
+
+# open yor browser and go to http://<your-ec2-public-ip>:8080 and enter the password you got from the previous command to unlock Jenkins.
+
+# Add the jenkins User to the docker group to allow Jenkins to run Docker commands without sudo:
+sudo usermod -aG docker jenkins
+
+# Temporarily grant the jenkins user access to the docker socket:
+sudo chmod 666 /var/run/docker.sock
+
+# Restart Jenkins to apply the changes:
+sudo systemctl restart jenkins
