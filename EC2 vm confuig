@@ -1,6 +1,6 @@
 # Docker setup
 chmod 400 'c:/Users/USER/OneDrive/Documents/2026ec1.pem'
-ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@100.48.197.127
+ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@3.236.154.109
 sudo apt update
 sudo apt upgrade -y
 sudo apt install docker.io -y
@@ -9,7 +9,7 @@ sudo usermod -aG docker $USER && newgrp docker && docker ps
  
 # Java and Jenkins setup
 
-sudo apt update
+sudo apt update -yor
 sudo apt install -y openjdk-21-jre
 java -version
 sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
@@ -23,7 +23,7 @@ sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
 ss -tuln | grep -i listen
-cat /var/lib/jenkins/secrets/initialAdminPassword
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 docker run -d -p 8080:8080 --name jenkinns jenkins/jenkins:lts
 docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword 
 
