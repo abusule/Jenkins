@@ -1,6 +1,6 @@
 # Docker setup
 chmod 400 'c:/Users/USER/OneDrive/Documents/2026ec1.pem'
-ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@3.236.154.109
+ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@100.26.245.119
 sudo apt update
 sudo apt upgrade -y
 sudo apt install docker.io -y
@@ -9,7 +9,7 @@ sudo usermod -aG docker $USER && newgrp docker && docker ps
  
 # Java and Jenkins setup
 
-sudo apt update -yor
+sudo apt update -y
 sudo apt install -y openjdk-21-jre
 java -version
 sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
@@ -24,10 +24,22 @@ sudo systemctl start jenkins
 sudo systemctl status jenkins
 ss -tuln | grep -i listen
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-docker run -d -p 8080:8080 --name jenkinns jenkins/jenkins:lts
-docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword 
 
-curl -I http://learning:learning@http://100.48.197.127:8080/job/demo/build?token=ABUSULE
+# Add the jenkins User to the docker group to allow Jenkins to run Docker commands without sudo:
+sudo usermod -aG docker jenkins
+
+# Temporarily grant the jenkins user access to the docker socket:
+sudo chmod 666 /var/run/docker.sock
+
+# Restart Jenkins to apply the changes
+
+sudo systemctl restart jenkins
+
+
+# docker run -d -p 8080:8080 --name jenkinns jenkins/jenkins:lts
+# docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword 
+
+# curl -I http://learning:learning@http://100.48.197.127:8080/job/demo/build?token=ABUSULE
 
 # open yor browser and go to http://<your-ec2-public-ip>:8080 and enter the password you got from the previous command to unlock Jenkins.
 
@@ -37,5 +49,23 @@ sudo usermod -aG docker jenkins
 # Temporarily grant the jenkins user access to the docker socket:
 sudo chmod 666 /var/run/docker.sock
 
-# Restart Jenkins to apply the changes:
-sudo systemctl restart jenkins
+# Restart Jenkins to apply the changes
+
+# Deploying Docker image using Jenkins in EC2 instance
+# Ensure you have the following environment variables set in your Jenkins job configuration or pipeline script: DockerHub username, DockerHub token, and the Docker image name. Also have the AWS key and EC2 host IP configured for SSH access.
+
+IMAGE="${DOCKERHUB_USER}/techmax-c2"
+echo "export DOCKER_TOKEN="${DOCKERHUB_TOKEN}"" > .env
+echo "export DOCKER_USERNAME="${DOCKERHUB_USER}"" >> .env
+echo "export IMAGE="${IMAGE}"" >> .env
+
+scp -i ${AWS_KEY} -o StrictHostKeyChecking=no .env ${AWS_USER}@${EC2_HOSTIP}:/tmp/.env || true
+
+ssh -i ${AWS_KEY} -o StrictHostKeyChecking=no -T ${AWS_USER}@${EC2_HOSTIP} '''
+source /tmp/.env 
+#docker network create "game-net" || truue
+echo '$DOCKER_TOKEN' | docker login -u '$DOCKER_USERNAME' --password-stdin && docker pull $IMAGE && docker run -d -p 8080:8080 --name jenkins $IMAGE
+docker pull 'IMAGE'
+docker rm acada-web || true ; docker run -d --name acada-web '$IMAGE';
+'''
+# Check the /tmp/.env file in the EC2 instance to ensure that the environment variables are set correctly.
