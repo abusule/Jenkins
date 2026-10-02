@@ -1,6 +1,6 @@
 # Docker setup
 chmod 400 'c:/Users/USER/OneDrive/Documents/2026ec1.pem'
-ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@100.26.245.119
+ssh -i 'c:/Users/USER/OneDrive/Documents/2026ec1.pem' ubuntu@54.167.94.142
 sudo apt update
 sudo apt upgrade -y
 sudo apt install docker.io -y
@@ -69,3 +69,47 @@ docker pull 'IMAGE'
 docker rm acada-web || true ; docker run -d --name acada-web '$IMAGE';
 '''
 # Check the /tmp/.env file in the EC2 instance to ensure that the environment variables are set correctly.
+
+====ANSIBLE INSTALLATION=====
+# Update ubuntu b4 installating the package.
+sudo apt update && sudo apt upgrade
+sudo apt install ansible-core -y
+sudo apt install ansible cowsay sshpass -y
+ansible --version # To check the version after inistallation
+
+
+ubuntu@ip-172-31-24-251:~/ansible_test$ vi inventory.ini
+ubuntu@ip-172-31-24-251:~/ansible_test$ cd
+ubuntu@ip-172-31-24-251:~$ vi /tmp/ec2.key
+ubuntu@ip-172-31-24-251:~$ cd ansible_test
+ubuntu@ip-172-31-24-251:~/ansible_test$ more inventory.ini
+[nginx]
+54.167.94.142
+
+[nginx:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=/tmp/ec2.key
+# Apply to all hosts in the inventory
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+====Change the file permission access====
+
+chmod 600 filenme
+
+
+===To run ansible=====
+
+ansible -i inventory.ini all -m ping
+
+
+========== To increase the RAM of a system if to low Add a swap file. =====
+
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+
+===To silence that warning for future runs, add====
+export ANSIBLE_PYTHON_INTERPRETER=auto_silent
