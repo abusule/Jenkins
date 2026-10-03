@@ -5,3 +5,13 @@ host2 ansible_host=192.0.2.11
 [all:vars]
 ansible_connection=ssh
 
+---
+- name: Install nginx
+	hosts: all
+	become: true
+	tasks:
+		- name: Install nginx
+			ansible.builtin.package:
+				name: nginx
+				state: present
+
