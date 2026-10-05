@@ -1,3 +1,4 @@
+# --------------DECLARATIVE PIPELINE----------------
 pipeline {
     agent any
 
@@ -19,3 +20,45 @@ pipeline {
         }
     }
 }
+
+# -------------------------------------
+pipeline {
+    agent any
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/abusule/acada-web'
+            }
+        }
+
+    }
+}
+
+========PIPELINE WITH MAVEN TOOL============
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven_3.10.0' // Specify the Maven tool name configured in Jenkins
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/abusule/Maven_local'
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t abusule/tomcat:latest .'
+            }
+        }
+    }
+}   
